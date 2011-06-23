@@ -47,7 +47,9 @@ sub bnotify_init {
 
 sub priv_msg {
     my ($server,$msg,$nick,$address,$target) = @_;
-    if (grep($server->{tag}, @alert_nets)) {
+    # Does this expose issues if someone includes regexp chars in their server
+    # tag?
+    if (grep(/^$server->{tag}$/, @alert_nets)) {
         Irssi::command('beep');
     }
     filewrite($server->{tag}.":".$nick." private");

@@ -157,6 +157,8 @@ sub join_plus {
             return;
     }
     # TODO: search values() and give a 'did you mean' for closest channel
+    # TODO: Fuzzy match for ## channels (Would be nice to hax at teh tab
+    # completion too)
 
     # check if we're connected to that server
     my $server = Irssi::server_find_tag($server_id);

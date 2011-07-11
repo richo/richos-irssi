@@ -133,10 +133,12 @@ sub goodnicks_write_line {
 sub need_redraw {
     # Code to validate @goodnicks against @valid_peeps needs to go in here.
     my $func = \&chan_is_cool;
+    my $tmp_server = Irssi::active_server();
+    my $own_nick = lc($tmp_server->{nick});
     # If valid peeps is empty we assume that we don't care who's in there.
     if (@valid_peeps > 0) {
         foreach my $nick (@goodnicks){
-            if (not(grep m/^\Q$nick\E$/i, @valid_peeps)) {
+            if (not(grep m/^\Q$nick\E$/i, @valid_peeps) && ($own_nick ne lc($nick)))  {
                 push @badnicks, $nick;
                 $func = \&chan_is_bad;
             }

@@ -19,6 +19,8 @@
 # Add fingerprint support
 # Hook to catch a fingerprint response on supported servers
 
+# finish cleanup
+
 use Irssi;
 use strict;
 use IO::Handle; # for (auto)flush

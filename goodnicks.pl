@@ -19,6 +19,8 @@
 # Add fingerprint support
 # Hook to catch a fingerprint response on supported servers
 
+# finish cleanup
+
 use Irssi;
 use strict;
 use IO::Handle; # for (auto)flush
@@ -77,25 +79,7 @@ my ($screen_prefix, $irssi_width, @prefix_mode, @prefix_status, $height, $goodni
 
 sub update {
 	read_settings();
-    # check_status();
 }
-
-##################
-##### OUTPUT #####
-##################
-
-### off ###
-
-sub cmd_off {
-		fifo_stop();
-}
-
-### fifo ###
-
-sub cmd_on {
-    # Stub
-}
-
 
 sub cmd_theme {
     my @args = split(/ /, shift);
@@ -117,26 +101,16 @@ sub cmd_debug {
 
 ### both ###
 
-sub goodnicks_write_start {
-    # Write out status line
-}
-
-sub goodnicks_write_end {
-    # Dummy, do nothing
-}
-
-sub goodnicks_write_line {
-    #dummy
-}
-
-# redraw (with little delay to avoid redrawing to much)
+# TODO Rename
 sub need_redraw {
     # Code to validate @goodnicks against @valid_peeps needs to go in here.
     my $func = \&chan_is_cool;
+    my $tmp_server = Irssi::active_server();
+    my $own_nick = lc($tmp_server->{nick});
     # If valid peeps is empty we assume that we don't care who's in there.
     if (@valid_peeps > 0) {
         foreach my $nick (@goodnicks){
-            if (not(grep m/^\Q$nick\E$/i, @valid_peeps)) {
+            if (not(grep m/^\Q$nick\E$/i, @valid_peeps) && ($own_nick ne lc($nick)))  {
                 push @badnicks, $nick;
                 $func = \&chan_is_bad;
             }
@@ -168,35 +142,6 @@ sub chan_is_bad {
     my $theme = Irssi::settings_get_str('goodnicks_theme_bad');
     set_theme($theme)
 }
-
-
-sub redraw {
-    #stub
-} 
-
-
-# redraw (with delay) if the window is visible (only in screen mode)
-sub sig_gui_print_text_finished {
-	if ($need_redraw) { # there's already a redraw 'queued'
-		return;
-	}
-	my $window = @_[0];
-	if ($window->{'refnum'} == Irssi::active_win->{'refnum'} || Irssi::settings_get_str('goodnicks_screen_split_windows') eq '*') {
-		need_redraw;
-		return;
-	}
-	foreach my $win (split(/[ ,]/, Irssi::settings_get_str('goodnicks_screen_split_windows'))) {
-		if ($window->{'refnum'} == $win || $window->{'name'} eq $win) {
-			need_redraw;
-			return;
-		}
-	}
-}
-
-####################
-##### NICKLIST #####
-####################
-
 
 sub get_valid_peeps {
     my $channel = shift;
@@ -239,37 +184,6 @@ sub make_goodnicks {
 
 	}
 	need_redraw();
-}
-
-# insert nick(as hash) into goodnicks
-# pre: cmp has to be calculated
-
-# scroll the goodnicks, arg = number of lines to scroll, positive = down, negative = up
-
-sub is_active_channel {
-	my ($server,$channel) = @_; # (channel as string)
-	return ($server && $server->{'tag'} eq $active_channel->{'server'}->{'tag'} && $server->channel_find($channel) && $active_channel && $server->channel_find($channel)->{'name'} eq $active_channel->{'name'});
-}
-
-sub sig_join {
-    make_goodnicks();
-}
-
-sub sig_kick {
-    make_goodnicks();
-}
-
-sub sig_part {
-    make_goodnicks();
-
-}
-
-sub sig_quit {
-    make_goodnicks();
-}
-
-sub sig_nick {
-    make_goodnicks();
 }
 
 sub cmd_add {
@@ -364,7 +278,6 @@ Irssi::signal_add_first 'default command goodnicks' => sub {
 	cmd_help();
 };
 Irssi::command_bind('goodnicks help',\&cmd_help);
-Irssi::command_bind('goodnicks on',\&cmd_on);
 Irssi::command_bind('goodnicks add', \&cmd_add);
 Irssi::command_bind('goodnicks del', \&cmd_del);
 Irssi::command_bind('goodnicks clear', \&cmd_clear);
@@ -372,7 +285,6 @@ Irssi::command_bind('goodnicks theme', \&cmd_theme);
 # XXX Need to add this.
 Irssi::command_bind('goodnicks list', \&cmd_list);
 Irssi::command_bind('goodnicks who', \&cmd_who);
-Irssi::command_bind('goodnicks off',\&cmd_off);
 Irssi::command_bind('goodnicks debug',\&cmd_debug);
 
 #
@@ -380,11 +292,11 @@ Irssi::command_bind('goodnicks debug',\&cmd_debug);
 Irssi::signal_add_last('window item changed', \&make_goodnicks);
 Irssi::signal_add_last('window changed', \&make_goodnicks);
 #Irssi::signal_add_last('channel wholist', \&sig_channel_wholist);
-Irssi::signal_add_first('message join', \&sig_join); # first, to be before ignores
-Irssi::signal_add_first('message part', \&sig_part);
-Irssi::signal_add_first('message kick', \&sig_kick);
-Irssi::signal_add_first('message quit', \&sig_quit);
-Irssi::signal_add_first('message nick', \&sig_nick);
+Irssi::signal_add_first('message join', \&make_goodnicks); # first, to be before ignores
+Irssi::signal_add_first('message part', \&make_goodnicks);
+Irssi::signal_add_first('message kick', \&make_goodnicks);
+Irssi::signal_add_first('message quit', \&make_goodnicks);
+Irssi::signal_add_first('message nick', \&make_goodnicks);
 #Irssi::signal_add_first('message own_nick', \&sig_nick);
 #Irssi::signal_add_first('nick mode changed', \&sig_mode);
 #

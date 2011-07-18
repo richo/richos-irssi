@@ -43,7 +43,7 @@ sub _debug_print {
     $win->print($str, Irssi::MSGLEVEL_CLIENTCRAP);
 }
 
-our $VERSION = '0.0.' . (split(/ /, '$Rev: 1187 $'))[1];
+our $VERSION = '0.1';
 
 our %IRSSI = (
               authors     => 'shabble, richo',
@@ -94,7 +94,7 @@ sub haxy_print_hook {
     my $data = $_[1];
     # Hose control characters
     $data =~ s/\x04.//g;
-    if ($data =~ m/^#/) {
+    if ($data =~ m/^[#&!]/) {
         my @items = split /\s+/, $data;
         push(@hack_channels, $items[0]);
         push(@hack_channels, $items[1]);
@@ -117,7 +117,6 @@ sub parse_channel_map {
     bind_completion();
 }
 
-# Bind a stack of commands so that irssi knows to complete them.
 sub bind_completion {
     foreach(%$channel_map) {
         Irssi::command_bind("join+ $_", \&join_plus);
@@ -129,7 +128,6 @@ sub unbind_completion {
         Irssi::command_unbind("join+ $_", \&join_plus);
     }
 }
-   
 
 sub join_plus {
     my ($args, $cmd_server, $witem) = @_;
@@ -137,7 +135,7 @@ sub join_plus {
 
     # parse out channel name from args:
     my $channel;
-    if ($args =~ m/^(#?[#a-zA-Z0-9-]+)/) {
+    if ($args =~ m/^([#&!]?[^ ]*)/) {
         $channel = $1;
         _debug_print ("Channel is: $channel");
     }
@@ -214,6 +212,8 @@ sub do_channel_join {
     my $channel = $pending_joins->{$serv->{address}};
     $channel = $pending_joins->{$serv->{tag}} unless $channel;
     if ($channel) {
+        _debug_print ("attempting to join $channel");
+
         Irssi::server_find_tag($serv->{tag})->command("JOIN $channel");
 
         delete $pending_joins->{$serv->{address}};

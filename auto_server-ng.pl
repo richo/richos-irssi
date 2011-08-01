@@ -60,6 +60,7 @@ my @hack_channels;
 my $pending_joins;
 
 sub auto_server_init {
+    _debug_print "Init";
     Irssi::command_bind('join+', \&join_plus);
     Irssi::settings_add_str('join_plus', 'joinplus_server_maps', '');
     Irssi::signal_add_last('setup changed', \&setup_changed);
@@ -73,6 +74,7 @@ sub auto_server_init {
 sub setup_changed {
     $DEBUG_ENABLED  = Irssi::settings_get_bool('join_plus_debug');
     parse_channel_map();
+    _debug_print "Setup changed";
 }
 
 # This is a tremendous kludge.

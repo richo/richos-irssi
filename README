@@ -1,0 +1,10 @@
+= goodnicks
+
+Goodnicks is a script to help manage your privacy on open, encrypted networks such as psych0tik.
+
+= auto server ng
+
+auto server ng solves the problem of wanting to join a particular channel (ie, #perl, #python) to ask for help but not remembering which chatnet you normally use for that channel.
+
+It gives you another command /join+ which connects you to the right network if you aren't already.
+

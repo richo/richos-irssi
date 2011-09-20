@@ -108,7 +108,7 @@ sub parse_channel_map {
         Irssi::active_win->print("Could not process channel => server mappings");
         $channel_map = {};
     }
-    _debug_print Dumper($channel_map);
+    #_debug_print Dumper($channel_map);
     bind_completion();
 }
 
@@ -179,6 +179,8 @@ sub join_plus {
         # check if we're already on the required channel
         my $on_channel = $server->channel_find($channel);
 
+        # FIXME
+        # Should this be $on_channel? Need docs..
         if (defined $channel && ref($channel) eq 'Irssi::Irc::Channel') {
             Irssi::active_win()->print("You are already connected to "
                                        . " $channel on " . $server->{tag});

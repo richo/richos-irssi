@@ -200,6 +200,7 @@ sub join_plus {
 }
 
 sub do_channel_join {
+    Irssi::signal_remove("event 376", 'do_channel_join');
     my ($serv) = @_;
     #_debug_print("server is " . Dumper($serv));
     _debug_print(sprintf("server is %s (%s)", $serv->{address}, $serv->{tag}));

@@ -6,7 +6,7 @@ use vars qw($VERSION %IRSSI);
 use Irssi;
 $VERSION = '0.0.1';
 %IRSSI = (
-    authors     => 'Richo',
+    authors     => 'richo',
     contact     => 'richo@psych0tik.net',
     name        => 'bnotify',
     description => 'Write notifications based on who\'s talking to you, also handle some window management and tmux alerts',

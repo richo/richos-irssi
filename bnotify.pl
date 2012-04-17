@@ -36,6 +36,9 @@ my @alert_nets = ();
 sub bnotify_init {
     Irssi::settings_add_str('bnotify', 'bnotify_alert_nets', '');
     @alert_nets = split(/ /, Irssi::settings_get_str('bnotify_alert_nets'));
+    # TODO
+    # Start subprocess for growlnotify/libnotify/whatever
+    # Arrange for subprocess cleanup at exit
 }
 
 #--------------------------------------------------------------------

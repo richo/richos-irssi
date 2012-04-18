@@ -35,7 +35,20 @@ $VERSION = '0.0.1';
 my @alert_nets = ();
 sub bnotify_init {
     Irssi::settings_add_str('bnotify', 'bnotify_alert_nets', '');
+    Irssi::settings_add_str('bnotify', 'bnotify_alerts', '');
+    my $alert_config = Irssi::settings_get_str('bnotify_alerts');
+    return if ($alert_config eq '');
+
+    our $killpid;
+    Irssi::settings_add_str('bnotify', 'bnotify_alerts', '');
     @alert_nets = split(/ /, Irssi::settings_get_str('bnotify_alert_nets'));
+    if ($alert_config eq "auto") {
+        $killpid = bnotify_background_task('tail -f .irssi/fnotify | while read heading message; do growlnotify -t "${heading}" -m "${message}"; done');
+        # Parse environment, work out where we are and invoke a sanish default
+    } else {
+        $killpid = bnotify_custom_init($alert_config);
+    }
+
     # TODO
     # - Check config for start notification
     # - Support custom command to run
@@ -43,7 +56,6 @@ sub bnotify_init {
     # - Call relevant initializer
     # Start subprocess for growlnotify/libnotify/whatever
     # Arrange for subprocess cleanup at exit
-    our $killpid = bnotify_osx_growl_init();
 }
 
 # END {
@@ -51,22 +63,17 @@ sub bnotify_init {
 #     # kill $killpid if $killpid;
 # }
 
-sub bnotify_osx_growl_init {
-    my $command = 'tail -f .irssi/fnotify | while read heading message; do
-    growlnotify -t "${heading}" -m "${message}";
-    done';
+sub bnotify_background_task {
+    my $cmd = shift;
+
     my $pid = fork;
     if ( $pid ) {
         # Parent
         return $pid;
     } else {
-        system( $command );
+        system( $cmd );
         exit;
     }
-}
-
-sub bnotify_custom_init {
-
 }
 
 #--------------------------------------------------------------------

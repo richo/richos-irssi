@@ -36,12 +36,12 @@ my @alert_nets = ();
 sub bnotify_init {
     Irssi::settings_add_str('bnotify', 'bnotify_alert_nets', '');
     Irssi::settings_add_str('bnotify', 'bnotify_alerts', '');
+    @alert_nets = split(/ /, Irssi::settings_get_str('bnotify_alert_nets'));
+
     my $alert_config = Irssi::settings_get_str('bnotify_alerts');
     return if ($alert_config eq '');
 
     our $killpid;
-    Irssi::settings_add_str('bnotify', 'bnotify_alerts', '');
-    @alert_nets = split(/ /, Irssi::settings_get_str('bnotify_alert_nets'));
     if ($alert_config eq "auto") {
         $killpid = bnotify_background_task('tail -f .irssi/fnotify | while read heading message; do growlnotify -t "${heading}" -m "${message}"; done');
         # Parse environment, work out where we are and invoke a sanish default

@@ -46,7 +46,7 @@ sub bnotify_init {
         $killpid = bnotify_background_task('tail -f .irssi/fnotify | while read heading message; do growlnotify -t "${heading}" -m "${message}"; done');
         # Parse environment, work out where we are and invoke a sanish default
     } else {
-        $killpid = bnotify_custom_init($alert_config);
+        $killpid = bnotify_background_task($alert_config);
     }
 
     # TODO

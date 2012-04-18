@@ -42,12 +42,17 @@ sub bnotify_init {
     my $alert_config = Irssi::settings_get_str('bnotify_alerts');
     return if ($alert_config eq '');
 
+
+    filewrite(""); # Empty the file
     if ($alert_config eq "auto") {
         bnotify_auto_alert();
         # Parse environment, work out where we are and invoke a sanish default
     } else {
         $killpid = bnotify_background_task($alert_config);
     }
+
+    Irssi::pidwait_add($killpid);
+    Irssi::signal_add("gui exit", "bnotify_cleanup")
 
     # TODO
     # - Check config for start notification
@@ -58,7 +63,8 @@ sub bnotify_init {
     # Arrange for subprocess cleanup at exit
 }
 
-END {
+sub bnotify_cleanup {
+    filedel();
     our $killpid;
     kill $killpid if $killpid;
 }
@@ -82,12 +88,12 @@ sub bnotify_background_task {
     my $cmd = shift;
 
     my $pid = fork;
-    if ( $pid ) {
+    if ( $pid == 0 ) {
+        # Child
+        exec( $cmd );
+    } else {
         # Parent
         return $pid;
-    } else {
-        system( $cmd );
-        exit;
     }
 }
 
@@ -173,6 +179,11 @@ sub filewrite {
     print FILE $text . "\n";
     close (FILE);
 }
+
+sub filedel {
+    unlink(Irssi::get_irssi_dir() . '/fnotify');
+}
+
 
 #--------------------------------------------------------------------
 # Irssi::signal_add_last / Irssi::command_bind

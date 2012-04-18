@@ -33,6 +33,7 @@ $VERSION = '0.0.1';
 # Add settings for which networks to beep on
 
 my @alert_nets = ();
+our $killpid;
 sub bnotify_init {
     Irssi::settings_add_str('bnotify', 'bnotify_alert_nets', '');
     Irssi::settings_add_str('bnotify', 'bnotify_alerts', '');
@@ -41,9 +42,8 @@ sub bnotify_init {
     my $alert_config = Irssi::settings_get_str('bnotify_alerts');
     return if ($alert_config eq '');
 
-    our $killpid;
     if ($alert_config eq "auto") {
-        $killpid = bnotify_background_task('tail -f .irssi/fnotify | while read heading message; do growlnotify -t "${heading}" -m "${message}"; done');
+        bnotify_auto_alert();
         # Parse environment, work out where we are and invoke a sanish default
     } else {
         $killpid = bnotify_background_task($alert_config);
@@ -58,10 +58,25 @@ sub bnotify_init {
     # Arrange for subprocess cleanup at exit
 }
 
-# END {
-#     # our $killpid;
-#     # kill $killpid if $killpid;
-# }
+END {
+    our $killpid;
+    kill $killpid if $killpid;
+}
+
+sub bnotify_auto_alert {
+    my $osname = $^O;
+    our $killpid;
+    if ( $osname eq 'darwin' ) {
+        $killpid = bnotify_background_task('tail -f .irssi/fnotify | while read heading message; do growlnotify -t "${heading}" -m "${message}"; done');
+    } elsif ( $osname eq 'linux' ) {
+        # TODO Sane default for lunix
+    } elsif ( $osname eq 'MSWin32' ) {
+        # TODO Sane default for win32
+    } else {
+        Irssi::print("Unrecognised platform: $osname");
+        Irssi::print("Unable to use default, specify command");
+    }
+}
 
 sub bnotify_background_task {
     my $cmd = shift;
